@@ -329,7 +329,7 @@ public class PinView extends AppCompatEditText {
                     handleTransform();
                 }
             } else {
-                if(mDefaultAddAnimator != null) {
+                if (mDefaultAddAnimator != null) {
                     mDefaultAddAnimator.end();
                     shouldTransformOnEnd = true;
                     mDefaultAddAnimator.reverse();
