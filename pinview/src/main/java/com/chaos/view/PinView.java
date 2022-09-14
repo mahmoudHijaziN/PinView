@@ -16,6 +16,8 @@
 
 package com.chaos.view;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -42,6 +44,7 @@ import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.inputmethod.EditorInfo;
 
@@ -117,6 +120,12 @@ public class PinView extends AppCompatEditText {
     private boolean mHideLineWhenFilled;
 
     private String mTransformed;
+
+    // Added Params
+    private boolean shouldTransformOnEnd = false;
+    private int textY = 0;
+    private boolean shouldTriggerLineColor = false;
+    private int mTriggerColor = Color.BLACK;
 
     public PinView(Context context) {
         this(context, null);
@@ -228,17 +237,30 @@ public class PinView extends AppCompatEditText {
     }
 
     private void setupAnimator() {
-        mDefaultAddAnimator = ValueAnimator.ofFloat(0.5f, 1f);
-        mDefaultAddAnimator.setDuration(150);
-        mDefaultAddAnimator.setInterpolator(new DecelerateInterpolator());
+        mDefaultAddAnimator = ValueAnimator.ofFloat(0f, 1f);
+        mDefaultAddAnimator.setDuration(300);
+        mDefaultAddAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
         mDefaultAddAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 float scale = (Float) animation.getAnimatedValue();
                 int alpha = (int) (255 * scale);
-                mAnimatorTextPaint.setTextSize(getTextSize() * scale);
-                mAnimatorTextPaint.setAlpha(alpha);
+                mAnimatorTextPaint.setTextSize(getTextSize());
+                //mAnimatorTextPaint.setAlpha(alpha);
+                //mAnimatorTextPaint.baselineShift = -1000;
+                textY = (int) ((1f - scale) * getHeight());
                 postInvalidate();
+            }
+        });
+        mDefaultAddAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                if(shouldTransformOnEnd) {
+                    shouldTransformOnEnd = false;
+                    textY = 0;
+                    handleTransform();
+                }
             }
         });
     }
@@ -304,10 +326,21 @@ public class PinView extends AppCompatEditText {
                 if (mDefaultAddAnimator != null) {
                     mDefaultAddAnimator.end();
                     mDefaultAddAnimator.start();
+                    handleTransform();
+                }
+            } else {
+                if(mDefaultAddAnimator != null) {
+                    mDefaultAddAnimator.end();
+                    shouldTransformOnEnd = true;
+                    mDefaultAddAnimator.reverse();
                 }
             }
+        } else {
+            handleTransform();
         }
+    }
 
+    private void handleTransform() {
         TransformationMethod transformation = getTransformationMethod();
         if (transformation == null) {
             mTransformed = getText().toString();
@@ -464,6 +497,14 @@ public class PinView extends AppCompatEditText {
         if (mHideLineWhenFilled && i < getText().length()) {
             return;
         }
+
+        // Change color based on line color
+        if(shouldTriggerLineColor && i > getText().length() - 1) {
+            mPaint.setColor(mTriggerColor);
+        } else {
+            mPaint.setColor(mCurLineColor);
+        }
+
         boolean l, r;
         l = r = true;
         if (mPinItemSpacing == 0 && mPinItemCount > 1) {
@@ -602,10 +643,16 @@ public class PinView extends AppCompatEditText {
 
     private void drawTextAtBox(Canvas canvas, Paint paint, CharSequence text, int charAt) {
         paint.getTextBounds(text.toString(), charAt, charAt + 1, mTextRect);
+        float handleTextY = 0f;
+        if(shouldTransformOnEnd) {
+            handleTextY = charAt == getText().length()? textY: 0f;
+        } else {
+            handleTextY = charAt == getText().length() - 1? textY: 0f;
+        }
         float cx = mItemCenterPoint.x;
         float cy = mItemCenterPoint.y;
         float x = cx - Math.abs((float) mTextRect.width()) / 2 - mTextRect.left;
-        float y = cy + Math.abs((float) mTextRect.height()) / 2 - mTextRect.bottom;// always center vertical
+        float y = cy + Math.abs((float) mTextRect.height()) / 2 - mTextRect.bottom - handleTextY;// always center vertical
         canvas.drawText(text, charAt, charAt + 1, x, y, paint);
     }
 
@@ -874,6 +921,14 @@ public class PinView extends AppCompatEditText {
      */
     public void setAnimationEnable(boolean enable) {
         isAnimationEnable = enable;
+    }
+
+    public void setShouldTriggerLineColor(boolean shouldTriggerLineColor) {
+        this.shouldTriggerLineColor = shouldTriggerLineColor;
+    }
+
+    public void setTriggerColor(int triggerColor) {
+        this.mTriggerColor = triggerColor;
     }
 
     /**

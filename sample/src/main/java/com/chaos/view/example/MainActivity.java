@@ -16,6 +16,7 @@
 
 package com.chaos.view.example;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -30,6 +31,7 @@ import android.view.View;
 import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 
 import com.chaos.view.PinView;
@@ -85,6 +87,11 @@ public class MainActivity extends AppCompatActivity {
         pinView.setHideLineWhenFilled(false);
 
         ((EditText) findViewById(R.id.password)).setTransformationMethod(new AsteriskPasswordTransformationMethod());
+
+        final PinView wantedPinView = findViewById(R.id.wantedPinView);
+        wantedPinView.setAnimationEnable(true);
+        wantedPinView.setShouldTriggerLineColor(true);
+        wantedPinView.setTriggerColor(ContextCompat.getColor(this, R.color.trigger_color));
     }
 
     @Override

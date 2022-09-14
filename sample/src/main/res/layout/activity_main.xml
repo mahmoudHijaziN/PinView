@@ -29,6 +29,32 @@
         tools:context="com.chaos.view.example.MainActivity">
 
         <com.chaos.view.PinView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/PinWidget.PinView"
+            android:id="@+id/wantedPinView"
+            android:layout_marginEnd="40dp"
+            android:layout_marginStart="40dp"
+            app:itemCount="6"
+            android:textSize="31sp"
+            app:viewType="line"
+            app:cursorColor="#FFFFFF"
+            app:lineColor="#FFFFFF"
+            app:layout_constraintVertical_bias="0.4"
+            android:inputType="number"
+            app:itemSpacing="5dp"
+            app:cursorWidth="2dp"
+            android:paddingBottom="10dp"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#555555"
+            android:layout_marginRight="40dp"
+            android:layout_marginLeft="40dp"
+            android:layout_marginTop="100dp"
+            android:background="#000000"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"/>
+
+        <com.chaos.view.PinView
             android:id="@+id/firstPinView"
             style="@style/PinWidget.PinView"
             android:layout_width="wrap_content"
@@ -50,7 +76,8 @@
             app:itemWidth="48dp"
             app:lineColor="@color/line_colors"
             app:lineWidth="2dp"
-            app:viewType="rectangle">
+            app:viewType="rectangle"
+            android:layout_marginTop="60dp">
 
             <requestFocus />
         </com.chaos.view.PinView>
